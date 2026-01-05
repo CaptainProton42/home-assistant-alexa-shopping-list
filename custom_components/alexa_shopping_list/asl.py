@@ -183,9 +183,9 @@ class AlexaShoppingListSync:
             return
         logger.debug(entry)
 
+
     async def _do_sync(self, logger=None, force=False):
 
-        loop = asyncio.get_running_loop()
         ha_list = await loop.run_in_executor(None, self._read_ha_shopping_list)
         original_ha_list_hash = await loop.run_in_executor(None, self._ha_shopping_list_hash)
         
@@ -231,10 +231,12 @@ class AlexaShoppingListSync:
 
     
     async def sync(self, logger=None, force=False):
-        result = False
+        loop = asyncio.get_running_loop()
+
         if os.path.exists(self._hasl_path) == False:
-            return False
-        
+            await self._debug_log_entry(logger, "HA shopping list file not found - creating empty list")
+            await loop.run_in_executor(None, self._export_ha_shopping_list, [])
+
         if self._cached_list_needs_updating() == False and force == False:
             return False
         
